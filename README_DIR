@@ -1,0 +1,25 @@
+## READMEディレクトリ配下を軽く見て、README_ForQiita.mdに従って作業を行う。
+
+
+.
+├── Dockerfile
+├── README
+│   ├── README_DEBUG_DOCKERFILE.md
+│   ├── README_ERROR_LOG.md
+│   ├── README_ForQiita.md
+│   └── README_SETTING_NAMES.md
+├── README_DIR
+├── buildspec.yml
+├── cloudformation
+│   ├── archived
+│   │   ├── ecr01.yml
+│   │   ├── ecs-fargate-01.yml
+│   │   ├── except-ecs-01.yml
+│   │   ├── resources-except-ecs-service01.yml
+│   │   └── sample-ecs_resources_inference.yml
+│   └── vpc-01.yml
+└── dockerImage
+    ├── requirements.txt
+    ├── sample.py
+    └── save
+        └── inference.py

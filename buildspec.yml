@@ -1,0 +1,40 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo ${DOCKERHUB_PASS_S}
+      - echo ${DOCKERHUB_USER_S}
+      - AWS_ACCOUNT=<<your_account_id>>
+      - REPO_NAME=ml-ecs-poc
+      - ECR_URL=${AWS_ACCOUNT}.dkr.ecr.ap-northeast-1.amazonaws.com
+      - REPOSITORY_URI_FULL=${ECR_URL}/${REPO_NAME}:latest
+
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - docker info --help
+      - aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin ${ECR_URL}
+      - echo Logging in to Docker Hub...
+      - echo ${DOCKERHUB_PASS_S} | docker login -u ${DOCKERHUB_USER_S} --password-stdin
+      - echo $REPOSITORY_URI_FULL
+      - echo ${REPOSITORY_URI_FULL}
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t ${REPO_NAME} .
+      - docker tag ${REPO_NAME}:latest ${REPOSITORY_URI_FULL}
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push ${REPOSITORY_URI_FULL}
+      - echo Writing image definitions file...
+      # 以下コマンドでecsデプロイ用の定義ファイルを出力する。以下ではnameの値はコンテナ名、imageUriの値はECRのURLを入れる。（両方タスク定義の画面から確認可能）
+      - echo "[{\"name\":\"image\",\"imageUri\":\"${REPOSITORY_URI_FULL}\"}]" > imagedefinitions.json
+      - cat imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json

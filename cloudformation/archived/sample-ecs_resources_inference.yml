@@ -1,0 +1,131 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Set for execute Fargate task
+
+Parameters:
+  FargateTaskProjectName:
+    Type: "String"
+    Description: "Name of Project for Fargate Task"
+  DataBucket:
+    Type: "String"
+    Description: "Data Bucket Name"
+  Stage:
+    Type: "String"
+    Description: "Stage of environment"
+    AllowedValues: 
+      - dev
+      - test
+      - prod
+
+
+Resources:
+  # ECSクラスター
+  EcsCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties: 
+      ClusterName: !Sub "${FargateTaskProjectName}-cluster"
+      ClusterSettings: 
+        - Name: "containerInsights"
+          Value: "disabled"
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${FargateTaskProjectName}-cluster-${Stage}"
+
+  # Fargateタスク定義
+  TaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties: 
+      Cpu: 256
+      Memory: 512
+      Family: !Sub "${FargateTaskProjectName}-task-${Stage}"
+      NetworkMode: "awsvpc"
+      Tags: 
+        - Key: "Name"
+          Value: !Sub "${FargateTaskProjectName}-task-${Stage}"
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      TaskRoleArn: !Ref ECSTaskRole
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions: 
+        - Name: !Sub ${FargateTaskProjectName}-container-${Stage}
+          Image: !GetAtt ["ECRRepository", "RepositoryUri"]
+          Command:
+            - "python3" 
+            - "/usr/src/app/inference.py"
+          MemoryReservation: 512
+          Environment:
+            - Name: SOURCE_BUCKET
+              Value: !Sub ${DataBucket}
+            - Name: MODEL_KEY
+              Value: ecs/model.txt
+            - Name: TARGET_DATA_KEY
+              Value: ecs/target.csv
+            - Name: DESTINATION_BUCKET
+              Value: !Sub ${DataBucket}
+            - Name: DESTINATION_OBJECKT_DIR
+              Value: ecs
+          PortMappings: 
+            - HostPort: 80
+              Protocol: tcp
+              ContainerPort: 80
+          Essential: "true" 
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Sub "/ecs/${FargateTaskProjectName}-${Stage}"
+              awslogs-region: "ap-northeast-1"
+              awslogs-stream-prefix: "ecs"
+              awslogs-create-group: "true"
+
+  # ECRレポジトリ
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${FargateTaskProjectName}-repository-${Stage}"
+
+  # CloudWatchロググループ
+  ECSLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub "/ecs/${FargateTaskProjectName}-${Stage}"
+
+  # タスク実行ロール
+  # コンテナ自体の権限
+  ECSTaskExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # タスクロール
+  # コンテナで実行する内容の権限
+  ECSTaskRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: ECSS3AccessPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:s3:::${DataBucket}"
+                  - !Sub "arn:aws:s3:::${DataBucket}/*"
+                Action:
+                  - s3:*
