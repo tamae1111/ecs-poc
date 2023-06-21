@@ -79,7 +79,7 @@ COPY ./dockerImage/sample.py ./
 エラータイミング：
 code piplineでのcodebuild時
 
-以下エラーが出た
+出たエラー内容：
 The Amazon ECS service 'ml-ecs-poc-service' is not active.
 ↓対策
 ローカルでpython実行ファイルのコピー形式が間違っていたので修正した
@@ -90,7 +90,7 @@ The Amazon ECS service 'ml-ecs-poc-service' is not active.
 エラータイミング：
 code piplineでのcodebuild時
 
-以下エラーが出た
+出たエラー内容：
 The Amazon ECS service 'ml-ecs-poc-service' is not active.
 
 対策:
@@ -101,12 +101,15 @@ The Amazon ECS service 'ml-ecs-poc-service' is not active.
 
 
 ### try8
+出たエラー内容：
 code piplineでのecsデプロイのフェイズのところで以下エラーが出ていた
 The image URI contains invalid characters.
-↓対策
+
+対策:
 buildspec.yml　内に　imagedefinitions.jsonに吐き出しているコマンドがあるのだが、その値がおかしかったので、
 それを修正した
-↓結果
+
+結果：
 deployできた
 
 
@@ -116,7 +119,7 @@ A load balancer cannot be attached to multiple subnets in the same Availability 
 
 対策：albの実態は一つのサブネットでターゲットグループが複数なのでとりあえず作り直すこととした
 
-結果：以下エラーが出た、わがままなalb(しゃーないけど)
+結果：以下エラーが出た、わがままalb(しゃーないけど)
 At least two subnets in two different Availability Zones must be specified (Service: AmazonElasticLoadBalancing;
 
 対策：
