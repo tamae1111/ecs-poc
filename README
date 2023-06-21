@@ -17,7 +17,7 @@
 │   │   ├── resources-except-ecs-service01.yml
 │   │   └── sample-ecs_resources_inference.yml
 │   └── vpc-01.yml
-└── scripts # 使用するのはsimple_serverは以下のみ
+└── scripts # 使用するのはsimple_server配下のみ
     ├── inference
     │   ├── inference.py
     │   └── requirements.txt
