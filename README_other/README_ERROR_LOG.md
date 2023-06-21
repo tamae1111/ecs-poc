@@ -1,16 +1,16 @@
 # 発生したエラーとそれに対してやったこと
-# いずれエラーが出た時のために、軽く流し見てから他作業を行うのがおすすめ
 
-## 発生したこと1：権限エラーが発生（エラーメッセージは割愛）
-AWSCodeBuildで使用されている
-codebuild-ml-ecs-poc-build-service-role
-というロールにecrへのアクセス権限をアタッチ
+### 注：いずれエラーが出た時のために、軽く流し見てから他作業を行うのがおすすめ
+
+## 発生したこと1：codeBuild実行時に権限エラーが発生（エラーメッセージは割愛）
+AWSCodeBuildで使用されている　codebuild-ml-ecs-poc-build-service-role　というロールに
+ecrへのアクセス権限をアタッチ
 
 ## 発生したこと2：コマンドエラーが発生
 その際エラーが発生：COMMAND_EXECUTION_ERROR: Error while executing command docker build -t ***:latest .. Reason: exit status 
 
 エラー原因：
-dockerファイルの置き場所と、ファイル名がDockerfileになってなかったのが原因だが、その判明に至るまでの試行をいかに記載する。
+結論としてはdockerファイルの置き場所と、ファイル名がDockerfileになってなかったのが原因だが、その判明に至るまでの試行をいかに記載する。
  
 ↓
 ### try1
@@ -58,7 +58,7 @@ AmazonSSMReadOnlyAccessをつけた
 
 ### try6
 エラータイミング：
-code piplineでのcodebuild時
+code piplineでのcode build実行時
 
 以下エラーが出た
 unable to prepare context: unable to evaluate symlinks in Dockerfile path
