@@ -13,6 +13,7 @@ vpc-01.yml
 
 次にルート直下で以下コマンドを実行
 
+```
 例：
 IMAGE_NAME=ml-ecs-poc
 AWS_ACCOUNT=<<your_account_id>>
@@ -29,7 +30,7 @@ codebuild-ml-ecs-poc-build-service-role
 ・ecrへのアクセス権限
 ・ssm:GetParameters
 ・AmazonSSMReadOnlyAccess
-
+```
 
 AWS Systems Manager-パラメータストアに以下を設定
 
